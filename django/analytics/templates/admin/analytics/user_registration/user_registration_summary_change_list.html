@@ -1,0 +1,146 @@
+{% extends "admin/change_list.html" %}
+
+{% block content_title %}
+    <h1> User Registation Summary </h1>
+{% endblock %}
+
+{% block result_list %}
+    <!-- Our content goes here... -->
+    <div class="results">
+        <h2> User Registration over date </h2>
+      
+
+    <style>
+    .bar-chart {
+      display: flex;
+      justify-content: space-around;
+      height: 300px;
+      padding-top: 60px;
+      overflow: hidden;
+      margin-top: 50px;
+      margin-bottom: 80px;
+    }
+    .bar-chart .bar {
+        flex: 100%;
+        align-self: flex-end;
+        margin-right: 2px;
+        position: relative;
+        background-color: #79aec8;
+
+    }
+    .bar-chart .bar:last-child {
+        margin: 0;
+    }
+    .bar-chart .bar:hover {
+        background-color: #417690;
+    }
+
+    .bar-chart .bar .bar-tooltip {
+        position: relative;
+        z-index: 999;
+    }
+    .bar-chart .bar .bar-tooltip {
+        position: absolute;
+        top: -20px;
+        left: 50%;
+        transform: translateX(-50%);
+        text-align: center;
+        font-weight: bold;
+        opacity: 1;
+    }
+    /* .bar-chart .bar:hover .bar-tooltip {
+        opacity: 1;
+    } */
+    </style>
+    
+    <div class="results">
+        <div class="bar-chart">
+        {% for x in summary %}
+            <div class="bar" style="height:{{x.pct}}%">
+                <div class="bar-tooltip">
+                    {{x.total}}
+                   <!-- {{x.date}} -->
+                </div>
+              
+                <div style="position: relative; vertical-align:top; transform: rotate(-90deg); "> 
+                    {% if  date_type == 'year'%}
+                        {{ x.date | date:"Y"}}
+                    {% elif  date_type == 'month' %}
+                        {{ x.date | date:"m-Y"}}
+                    {% elif date_type == 'day' %}
+                        {{ x.date | date:"d-M"}}
+                    {% else %}
+                        {{ x.date | date:"P"}}
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+        </div>
+    </div>
+
+        <table>
+    
+        <thead>
+          <tr>
+            <th>
+              <div class="text">
+                <a href="#">Date</a>
+              </div>
+            </th>
+            <!-- <th>
+              <div class="text">
+                <a href="#">Total</a>
+              </div>
+            </th> -->
+            <th>
+              <div class="text">
+                <a href="#">Total Registrations</a>
+              </div>
+            </th>
+            <!-- <th>
+              <div class="text">
+                <a href="#">
+                  <strong>% Of Total Sales</strong>
+                </a>
+              </div>
+            </th> -->
+          </tr>
+        </thead>
+    
+        <tbody>
+          {% for row in summary %}
+          <tr class="{% cycle 'row1' 'row2' %}">
+            <td> 
+                {% if  date_type == 'year'%}
+                    {{ row.date | date:"Y"}}
+                {% elif  date_type == 'month' %}
+                    {{ row.date | date:"m-Y"}}
+                {% elif date_type == 'day' %}
+                    {{ row.date | date:"d-M"}}
+                {% else %}
+                    {{ row.date | date:"P"}}
+                {% endif %}
+                
+            </td>
+           
+            <td>
+              <strong>
+              {{ row.total }}
+              </strong>
+            </td>
+          </tr>
+          {% endfor %}
+          <tr style="font-weight:bold; border-top:2px solid #DDDDDD;">
+            <td> Total </td>
+            <td> {{ all_total.total__sum}} </td>
+         </tr>
+
+        </tbody>
+    
+      </table>
+      {{date_type}}
+    </div>
+    
+{% endblock %}
+
+{% block pagination %}{% endblock %}
