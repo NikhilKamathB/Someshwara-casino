@@ -54,12 +54,14 @@ SERVER = os.getenv("SERVER")
 PROJECT = os.getenv("PROJECT")
 PROJECT_DJANGO_ROOT = os.getenv("PROJECT_DJANGO_ROOT")
 PROJECT_DJANGO_WSGI_APP = os.getenv("PROJECT_DJANGO_WSGI_APP")
+SSH_FILE_NAME = os.getenv("SSH_FILE_NAME")
 SSH_FILE = os.getenv("SSH_FILE")
+PEM_FILE = os.getenv("PEM_FILE")
 GIT_REPO = os.getenv("GIT_REPO")
 SERVER_NAME = os.getenv("SERVER_NAME")
 PROJECT_STATIC_ROOT = os.getenv("PROJECT_STATIC_ROOT")
 
-CONNECT_KWARGS = {"key_filename":[SSH_FILE]}
+CONNECT_KWARGS = {"key_filename":[PEM_FILE]}
 c = Connection(host=SERVER, user=USER, connect_kwargs=CONNECT_KWARGS)
 print(f"Connected to SERVER={SERVER} user={USER}, CONNECT_KWARGS= {CONNECT_KWARGS}")
 
@@ -78,6 +80,7 @@ to run full
 def ls_normal(ctx):
     c.run('ls')
 
+@task
 def ls(ctx, folder):
     c.run(f"ls -lrta {folder}")
 
@@ -98,6 +101,11 @@ def install_git(ctx):
     c.sudo("apt install git-all -y")
 
 @task
+def install_virtualenv(ctx):
+    c.sudo("apt-get install python3-pip -y")
+    c.run("python3 -m pip install virtualenv")
+
+@task
 def git_clone(ctx):
     print(f"git clone {GIT_REPO}")
     with c.cd(f"~/"):
@@ -109,11 +117,6 @@ def git_clone(ctx):
 def git_pull(ctx):
     with c.cd(f"~/{PROJECT}"):
         c.run(f"git pull")
-
-@task
-def install_virtualenv(ctx):
-    c.sudo("apt-get install python3-pip -y")
-    c.run("python3 -m pip install virtualenv")
 
 @task
 def create_venv(ctx):
@@ -230,7 +233,7 @@ EOF
 def put_env(ctx, env):
     """the parameter file will be copied as .env and service is relaunched"""
     basefile = os.path.basename(env)
-    local(f"rsync -e 'ssh -i {SSH_FILE}' {env} ubuntu@{SERVER}:~/{PROJECT}/{PROJECT_DJANGO_ROOT}/")
+    local(f"rsync -e 'ssh -i {PEM_FILE}' {env} ubuntu@{SERVER}:~/{PROJECT}/{PROJECT_DJANGO_ROOT}/")
     if basefile != ".env":#rename to .env
         c.run(f"mv ~/{PROJECT}/{PROJECT_DJANGO_ROOT}/{basefile} ~/{PROJECT}/{PROJECT_DJANGO_ROOT}/.env")
 
